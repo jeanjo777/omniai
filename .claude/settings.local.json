@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(for region in us-east-1 us-west-1 eu-west-1 eu-central-1 ap-southeast-1 us-east-2 eu-west-2 ap-northeast-1)",
+      "Bash(do echo \"Trying $region...\")"
+    ]
+  }
+}
