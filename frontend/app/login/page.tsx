@@ -1,7 +1,7 @@
 // OmniAI - Page de connexion
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/components/AuthProvider'
@@ -11,13 +11,35 @@ import toast from 'react-hot-toast'
 export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [loading, setLoading] = useState(false)
-  const { login, loginWithOAuth } = useAuth()
+  const [submitLoading, setSubmitLoading] = useState(false)
+  const { user, loading, login, loginWithOAuth } = useAuth()
   const router = useRouter()
+
+  useEffect(() => {
+    if (!loading && user) {
+      router.replace('/chat')
+    }
+  }, [user, loading, router])
+
+  if (loading) {
+    return (
+      <main className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+      </main>
+    )
+  }
+
+  if (user) {
+    return (
+      <main className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+      </main>
+    )
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setLoading(true)
+    setSubmitLoading(true)
     try {
       await login(email, password)
       toast.success('Connexion réussie !')
@@ -25,7 +47,7 @@ export default function LoginPage() {
     } catch (error: any) {
       toast.error(error.message || 'Erreur de connexion')
     }
-    setLoading(false)
+    setSubmitLoading(false)
   }
 
   const handleOAuth = async (provider: 'google' | 'github') => {
@@ -135,10 +157,10 @@ export default function LoginPage() {
 
             <button
               type="submit"
-              disabled={loading}
+              disabled={submitLoading}
               className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-indigo-500 text-white rounded-lg font-medium hover:bg-indigo-600 disabled:opacity-50 transition-colors cursor-pointer"
             >
-              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <LogIn className="w-4 h-4" />}
+              {submitLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <LogIn className="w-4 h-4" />}
               Se connecter
             </button>
           </form>

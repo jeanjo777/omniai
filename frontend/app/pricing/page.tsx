@@ -140,7 +140,7 @@ export default function PricingPage() {
               </div>
 
               <div className="mb-6">
-                <span className="text-4xl font-bold">{plan.price}&euro;</span>
+                <span className="text-4xl font-bold">{plan.price}$ <span className="text-sm font-normal text-gray-500">CAD</span></span>
                 <span className="text-gray-500">{plan.period}</span>
               </div>
 

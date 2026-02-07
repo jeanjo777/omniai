@@ -1,7 +1,7 @@
 // OmniAI - Page d'inscription
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/components/AuthProvider'
@@ -13,8 +13,14 @@ export default function SignupPage() {
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [loading, setLoading] = useState(false)
-  const { register, loginWithOAuth } = useAuth()
+  const { user, register, loginWithOAuth } = useAuth()
   const router = useRouter()
+
+  useEffect(() => {
+    if (user) {
+      router.replace('/chat')
+    }
+  }, [user, router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
