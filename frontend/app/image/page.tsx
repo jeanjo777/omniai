@@ -5,11 +5,12 @@ import { useState, useRef } from 'react'
 import { useAuth } from '@/components/AuthProvider'
 import {
   Image as ImageIcon, Loader2, Download, Sparkles,
-  Wand2, Maximize2, X, ArrowRight, Copy, Check,
+  Wand2, Maximize2, X, Copy, Check,
   RectangleHorizontal, Square, RectangleVertical,
-  Palette, Aperture, Zap
+  Palette, Aperture, Zap, Coins
 } from 'lucide-react'
 import toast from 'react-hot-toast'
+import Link from 'next/link'
 
 const styles = [
   { value: 'vivid', label: 'Vivid', desc: 'Couleurs vibrantes et intenses', icon: Palette },
@@ -63,6 +64,15 @@ export default function ImagePage() {
       })
 
       const data = await res.json()
+
+      if (res.status === 402) {
+        toast.error(
+          `Points insuffisants (${data.balance || 0} pts). Il vous faut ${data.cost || 3} pts.`,
+          { duration: 5000 }
+        )
+        return
+      }
+
       if (data.error) throw new Error(data.error)
 
       setImages((prev) => [{ url: data.url, revisedPrompt: data.revisedPrompt || prompt }, ...prev])
@@ -81,23 +91,17 @@ export default function ImagePage() {
 
   return (
     <main className="min-h-[calc(100vh-4rem)] relative overflow-hidden">
-      {/* Animated background */}
-      <div className="fixed inset-0 -z-10">
-        <div className="absolute inset-0 bg-[#050510]" />
-        <div className="absolute top-[-20%] right-[-10%] w-[600px] h-[600px] bg-indigo-600/15 rounded-full blur-[120px] animate-pulse" style={{ animationDuration: '8s' }} />
-        <div className="absolute bottom-[-20%] left-[-10%] w-[500px] h-[500px] bg-purple-600/15 rounded-full blur-[120px] animate-pulse" style={{ animationDuration: '10s' }} />
-        <div className="absolute top-[40%] left-[50%] w-[300px] h-[300px] bg-pink-600/10 rounded-full blur-[100px] animate-pulse" style={{ animationDuration: '12s' }} />
-      </div>
+      {/* Background handled by global layout aurora */}
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
         {/* Header */}
         <div className="mb-8 animate-fade-in">
           <div className="flex items-center gap-4 mb-2">
             <div className="relative">
-              <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-500/25">
+              <div className="w-12 h-12 bg-gradient-to-br from-violet-500 via-indigo-500 to-cyan-500 rounded-2xl flex items-center justify-center shadow-lg shadow-violet-500/25">
                 <ImageIcon className="w-6 h-6 text-white" />
               </div>
-              <div className="absolute -inset-1 bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 rounded-2xl opacity-20 blur-sm -z-10" />
+              <div className="absolute -inset-1 bg-gradient-to-br from-violet-500 via-indigo-500 to-cyan-500 rounded-2xl opacity-20 blur-sm -z-10" />
             </div>
             <div>
               <h1 className="text-2xl font-bold text-white">
@@ -113,13 +117,13 @@ export default function ImagePage() {
         {/* Main Input Card — Glassmorphism */}
         <div className="relative rounded-2xl overflow-hidden mb-8 animate-slide-up">
           {/* Glass border glow */}
-          <div className="absolute -inset-[1px] bg-gradient-to-br from-indigo-500/30 via-purple-500/20 to-pink-500/30 rounded-2xl" />
+          <div className="absolute -inset-[1px] bg-gradient-to-br from-violet-500/30 via-indigo-500/20 to-cyan-500/30 rounded-2xl" />
 
           <div className="relative bg-white/[0.03] backdrop-blur-2xl rounded-2xl border border-white/[0.08] p-6">
             {/* Prompt Input */}
             <div className="mb-5">
               <label htmlFor="image-prompt" className="flex items-center gap-2 text-sm font-medium mb-2.5 text-gray-200">
-                <Wand2 className="w-4 h-4 text-indigo-400" />
+                <Wand2 className="w-4 h-4 text-violet-400" />
                 Décrivez votre image
               </label>
               <div className="relative group">
@@ -130,7 +134,7 @@ export default function ImagePage() {
                   onChange={(e) => setPrompt(e.target.value)}
                   placeholder="Un paysage fantastique avec des montagnes cristallines sous un ciel aurore boréale..."
                   rows={3}
-                  className="w-full px-4 py-3.5 rounded-xl border border-white/[0.08] bg-white/[0.03] backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500/30 text-sm text-gray-100 resize-none placeholder-gray-600 transition-all duration-200"
+                  className="w-full px-4 py-3.5 rounded-xl border border-white/[0.08] bg-white/[0.03] backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-violet-500/40 focus:border-violet-500/30 text-sm text-gray-100 resize-none placeholder-gray-600 transition-all duration-200"
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' && !e.shiftKey) {
                       e.preventDefault()
@@ -151,9 +155,9 @@ export default function ImagePage() {
                   key={i}
                   type="button"
                   onClick={() => setPrompt(s.text)}
-                  className="group/chip flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg border border-white/[0.06] bg-white/[0.02] text-gray-400 hover:text-indigo-300 hover:border-indigo-500/30 hover:bg-indigo-500/10 transition-all duration-200 cursor-pointer"
+                  className="group/chip flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg border border-white/[0.06] bg-white/[0.02] text-gray-400 hover:text-violet-300 hover:border-violet-500/30 hover:bg-indigo-500/10 transition-all duration-200 cursor-pointer"
                 >
-                  <s.icon className="w-3 h-3 text-gray-600 group-hover/chip:text-indigo-400 transition-colors duration-200" />
+                  <s.icon className="w-3 h-3 text-gray-600 group-hover/chip:text-violet-400 transition-colors duration-200" />
                   {s.text}
                 </button>
               ))}
@@ -172,7 +176,7 @@ export default function ImagePage() {
                       onClick={() => setStyle(s.value)}
                       className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 cursor-pointer border ${
                         style === s.value
-                          ? 'bg-indigo-500/15 border-indigo-500/40 text-indigo-300 shadow-lg shadow-indigo-500/10'
+                          ? 'bg-violet-500/15 border-violet-500/40 text-violet-300 shadow-lg shadow-violet-500/10'
                           : 'border-white/[0.06] bg-white/[0.02] text-gray-400 hover:border-white/[0.12] hover:bg-white/[0.04]'
                       }`}
                     >
@@ -194,7 +198,7 @@ export default function ImagePage() {
                       onClick={() => setSize(s.value)}
                       className={`flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 cursor-pointer border text-center ${
                         size === s.value
-                          ? 'bg-indigo-500/15 border-indigo-500/40 text-indigo-300 shadow-lg shadow-indigo-500/10'
+                          ? 'bg-violet-500/15 border-violet-500/40 text-violet-300 shadow-lg shadow-violet-500/10'
                           : 'border-white/[0.06] bg-white/[0.02] text-gray-400 hover:border-white/[0.12] hover:bg-white/[0.04]'
                       }`}
                     >
@@ -210,7 +214,7 @@ export default function ImagePage() {
                 type="button"
                 onClick={handleGenerate}
                 disabled={loading || !prompt.trim()}
-                className="group/btn relative flex items-center justify-center gap-2 px-8 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-medium disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200 shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/40 hover:from-indigo-500 hover:to-purple-500 cursor-pointer whitespace-nowrap overflow-hidden"
+                className="group/btn relative flex items-center justify-center gap-2 px-8 py-2.5 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-xl font-medium disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200 shadow-lg shadow-violet-500/20 hover:shadow-violet-500/40 hover:from-violet-500 hover:to-indigo-500 cursor-pointer whitespace-nowrap overflow-hidden"
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 translate-x-[-100%] group-hover/btn:translate-x-[100%] transition-transform duration-700" />
                 {loading ? (
@@ -219,7 +223,11 @@ export default function ImagePage() {
                   <Sparkles className="w-4 h-4" />
                 )}
                 {loading ? 'Génération...' : 'Générer'}
-                {!loading && <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-0.5 transition-transform duration-200" />}
+                {!loading && (
+                  <span className="flex items-center gap-1 text-xs opacity-70">
+                    <Coins className="w-3 h-3" />3 pts
+                  </span>
+                )}
               </button>
             </div>
           </div>
@@ -248,7 +256,7 @@ export default function ImagePage() {
                   <div className="relative w-16 h-16 mx-auto mb-4">
                     <div className="absolute inset-0 rounded-full border-2 border-indigo-500/20" />
                     <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-indigo-500 animate-spin" />
-                    <Sparkles className="absolute inset-0 m-auto w-6 h-6 text-indigo-400 animate-pulse" />
+                    <Sparkles className="absolute inset-0 m-auto w-6 h-6 text-violet-400 animate-pulse" />
                   </div>
                   <p className="text-sm text-gray-400">Création en cours...</p>
                   <p className="text-xs text-gray-600 mt-1">Cela peut prendre quelques secondes</p>
@@ -259,7 +267,7 @@ export default function ImagePage() {
             {images.map((img, i) => (
               <div
                 key={i}
-                className="group relative rounded-2xl overflow-hidden border border-white/[0.06] bg-white/[0.02] backdrop-blur-sm shadow-xl hover:shadow-2xl hover:shadow-indigo-500/10 hover:border-white/[0.12] transition-all duration-300 cursor-pointer"
+                className="group relative rounded-2xl overflow-hidden border border-white/[0.06] bg-white/[0.02] backdrop-blur-sm shadow-xl hover:shadow-2xl hover:shadow-violet-500/10 hover:border-white/[0.12] transition-all duration-300 cursor-pointer"
                 onClick={() => setLightbox(img)}
               >
                 <img

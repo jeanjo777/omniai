@@ -1,4 +1,4 @@
-// OmniAI - Page Chat IA
+// OmniAI - Page Chat IA — Gradient Modern
 'use client'
 
 import { useState, useRef, useEffect, useCallback } from 'react'
@@ -41,10 +41,10 @@ interface Conversation {
 }
 
 const SUGGESTIONS = [
-  { icon: Code, text: 'Explique-moi les closures en JavaScript', color: 'text-blue-500' },
-  { icon: Image, text: "Donne-moi des idées de prompts pour DALL-E", color: 'text-purple-500' },
-  { icon: Lightbulb, text: 'Comment optimiser les performances React ?', color: 'text-yellow-500' },
-  { icon: Zap, text: 'Crée une API REST avec Express et Supabase', color: 'text-orange-500' },
+  { icon: Code, text: 'Explique-moi les closures en JavaScript', gradient: 'from-blue-500 to-cyan-500' },
+  { icon: Image, text: "Donne-moi des idées de prompts pour DALL-E", gradient: 'from-violet-500 to-purple-500' },
+  { icon: Lightbulb, text: 'Comment optimiser les performances React ?', gradient: 'from-amber-500 to-orange-500' },
+  { icon: Zap, text: 'Crée une API REST avec Express et Supabase', gradient: 'from-emerald-500 to-teal-500' },
 ]
 
 export default function ChatPage() {
@@ -65,14 +65,12 @@ export default function ChatPage() {
 
   const token = session?.access_token
 
-  // Auth guard
   useEffect(() => {
     if (!authLoading && !user) {
       router.replace('/login')
     }
   }, [user, authLoading, router])
 
-  // Load conversation history
   const loadHistory = useCallback(async () => {
     if (!token) return
     try {
@@ -92,12 +90,10 @@ export default function ChatPage() {
     loadHistory()
   }, [loadHistory])
 
-  // Scroll to bottom
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
-  // Auto-resize textarea
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto'
@@ -152,7 +148,6 @@ export default function ChatPage() {
       textareaRef.current.style.height = 'auto'
     }
 
-    // Placeholder for assistant response
     const assistantId = crypto.randomUUID()
     setMessages(prev => [...prev, {
       id: assistantId,
@@ -165,7 +160,6 @@ export default function ChatPage() {
       const controller = new AbortController()
       abortControllerRef.current = controller
 
-      // Try streaming first
       const res = await fetch(`${API_URL}/api/chat/stream`, {
         method: 'POST',
         headers: {
@@ -180,7 +174,6 @@ export default function ChatPage() {
       })
 
       if (!res.ok) {
-        // Fallback to non-streaming
         const fallbackRes = await fetch(`${API_URL}/api/chat`, {
           method: 'POST',
           headers: {
@@ -206,7 +199,6 @@ export default function ChatPage() {
         return
       }
 
-      // Stream reading
       const reader = res.body?.getReader()
       const decoder = new TextDecoder()
       if (!reader) throw new Error('Stream non disponible')
@@ -240,7 +232,6 @@ export default function ChatPage() {
         }
       }
 
-      // If stream returned nothing, fallback
       if (!fullContent) {
         const fallbackRes = await fetch(`${API_URL}/api/chat`, {
           method: 'POST',
@@ -294,11 +285,10 @@ export default function ChatPage() {
     setTimeout(() => setCopiedId(null), 2000)
   }
 
-  // Loading
   if (authLoading) {
     return (
       <div className="flex items-center justify-center h-[calc(100vh-4rem)]">
-        <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+        <Loader2 className="w-8 h-8 animate-spin text-violet-500" />
       </div>
     )
   }
@@ -307,17 +297,17 @@ export default function ChatPage() {
 
   return (
     <div className="flex h-[calc(100vh-4rem)]">
-      {/* ============ SIDEBAR ============ */}
+      {/* SIDEBAR */}
       <aside
         className={`${
           sidebarOpen ? 'w-72' : 'w-0'
-        } transition-all duration-300 overflow-hidden border-r border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-950/50 flex flex-col`}
+        } transition-all duration-300 overflow-hidden border-r border-white/[0.06] bg-white/[0.02] backdrop-blur-sm flex flex-col`}
       >
         <div className="p-3">
           <button
             type="button"
             onClick={startNewChat}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 hover:bg-white dark:hover:bg-gray-900 transition-colors cursor-pointer text-sm font-medium"
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-white/[0.08] bg-white/[0.03] hover:bg-white/[0.06] transition-all duration-200 cursor-pointer text-sm font-medium text-gray-300"
           >
             <Plus className="w-4 h-4" />
             Nouvelle conversation
@@ -326,17 +316,17 @@ export default function ChatPage() {
 
         <div className="flex-1 overflow-y-auto px-3 space-y-0.5 pb-4">
           {conversations.length === 0 ? (
-            <p className="text-xs text-gray-400 text-center py-8">Aucune conversation</p>
+            <p className="text-xs text-gray-600 text-center py-8">Aucune conversation</p>
           ) : (
             conversations.map((conv) => (
               <button
                 key={conv.id}
                 type="button"
                 onClick={() => selectConversation(conv)}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors cursor-pointer text-left ${
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-200 cursor-pointer text-left ${
                   activeConversationId === conv.id
-                    ? 'bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400'
-                    : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-900'
+                    ? 'bg-violet-500/15 text-violet-300'
+                    : 'text-gray-400 hover:text-gray-300 hover:bg-white/[0.04]'
                 }`}
               >
                 <MessageSquare className="w-4 h-4 flex-shrink-0" />
@@ -347,14 +337,14 @@ export default function ChatPage() {
         </div>
       </aside>
 
-      {/* ============ MAIN ============ */}
+      {/* MAIN */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Header */}
-        <header className="flex items-center gap-3 px-4 py-3 border-b border-gray-200 dark:border-gray-800 bg-white/80 dark:bg-gray-950/80 backdrop-blur-sm">
+        <header className="flex items-center gap-3 px-4 py-3 border-b border-white/[0.06] bg-white/[0.02] backdrop-blur-sm">
           <button
             type="button"
             onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer"
+            className="p-2 rounded-xl hover:bg-white/[0.05] transition-all duration-200 cursor-pointer"
           >
             {sidebarOpen ? (
               <PanelLeftClose className="w-5 h-5 text-gray-500" />
@@ -363,14 +353,16 @@ export default function ChatPage() {
             )}
           </button>
           <div className="flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-indigo-500" />
-            <h1 className="font-semibold">OmniAI Chat</h1>
+            <div className="w-6 h-6 bg-gradient-to-br from-violet-500 to-indigo-500 rounded-lg flex items-center justify-center">
+              <Sparkles className="w-3.5 h-3.5 text-white" />
+            </div>
+            <h1 className="font-semibold text-white">OmniAI Chat</h1>
           </div>
           {activeConversationId && (
             <button
               type="button"
               onClick={startNewChat}
-              className="ml-auto p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer"
+              className="ml-auto p-2 rounded-xl hover:bg-white/[0.05] transition-all duration-200 cursor-pointer"
               title="Nouvelle conversation"
             >
               <Plus className="w-4 h-4 text-gray-500" />
@@ -378,17 +370,16 @@ export default function ChatPage() {
           )}
         </header>
 
-        {/* ============ MESSAGES ============ */}
+        {/* MESSAGES */}
         <div className="flex-1 overflow-y-auto">
           {messages.length === 0 ? (
-            /* Welcome */
             <div className="flex flex-col items-center justify-center h-full px-4 py-12">
-              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center mb-6 shadow-lg shadow-indigo-500/20">
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center mb-6 shadow-lg shadow-violet-500/25">
                 <Bot className="w-9 h-9 text-white" />
               </div>
-              <h2 className="text-2xl font-bold mb-2">Bonjour !</h2>
+              <h2 className="text-2xl font-bold mb-2 text-white">Bonjour !</h2>
               <p className="text-gray-500 mb-10 text-center max-w-md">
-                Je suis OmniAI, votre assistant IA. Posez-moi n'importe quelle question !
+                Je suis OmniAI, votre assistant IA. Posez-moi n&apos;importe quelle question !
               </p>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-2xl w-full">
@@ -397,10 +388,12 @@ export default function ChatPage() {
                     key={i}
                     type="button"
                     onClick={() => sendMessage(s.text)}
-                    className="flex items-start gap-3 p-4 rounded-xl border border-gray-200 dark:border-gray-800 hover:border-indigo-300 dark:hover:border-indigo-700 hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-all cursor-pointer text-left group"
+                    className="flex items-start gap-3 p-4 rounded-xl glass-card hover:bg-white/[0.05] transition-all duration-200 cursor-pointer text-left group"
                   >
-                    <s.icon className={`w-5 h-5 mt-0.5 ${s.color} flex-shrink-0`} />
-                    <span className="text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-gray-200 transition-colors">
+                    <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${s.gradient} flex items-center justify-center flex-shrink-0`}>
+                      <s.icon className="w-4 h-4 text-white" />
+                    </div>
+                    <span className="text-sm text-gray-400 group-hover:text-gray-200 transition-colors">
                       {s.text}
                     </span>
                   </button>
@@ -408,65 +401,60 @@ export default function ChatPage() {
               </div>
             </div>
           ) : (
-            /* Messages */
             <div className="max-w-3xl mx-auto px-4 py-6 space-y-6">
               {messages.map((message) => (
                 <div key={message.id} className="animate-fade-in group">
                   <div className="flex gap-3">
-                    {/* Avatar */}
                     <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 mt-1 ${
                       message.role === 'assistant'
-                        ? 'bg-gradient-to-br from-indigo-500 to-purple-600'
-                        : 'bg-gray-200 dark:bg-gray-700'
+                        ? 'bg-gradient-to-br from-violet-500 to-indigo-600'
+                        : 'bg-white/[0.06] border border-white/[0.08]'
                     }`}>
                       {message.role === 'assistant' ? (
                         <Bot className="w-4 h-4 text-white" />
                       ) : (
-                        <User className="w-4 h-4 text-gray-600 dark:text-gray-300" />
+                        <User className="w-4 h-4 text-gray-400" />
                       )}
                     </div>
 
-                    {/* Content */}
                     <div className="flex-1 min-w-0">
-                      <span className="text-sm font-medium mb-1 block">
+                      <span className="text-sm font-medium mb-1 block text-gray-300">
                         {message.role === 'assistant' ? 'OmniAI' : 'Vous'}
                       </span>
 
                       {message.role === 'assistant' ? (
                         <div className="relative">
-                          <div className="prose dark:prose-invert prose-sm max-w-none prose-pre:bg-gray-900 prose-pre:text-gray-100 prose-code:text-indigo-500 prose-code:before:content-[''] prose-code:after:content-['']">
+                          <div className="prose prose-invert prose-sm max-w-none prose-pre:bg-white/[0.03] prose-pre:border prose-pre:border-white/[0.08] prose-code:text-violet-400 prose-code:before:content-[''] prose-code:after:content-['']">
                             <ReactMarkdown>
                               {message.content || (isStreaming ? '' : '...')}
                             </ReactMarkdown>
                           </div>
 
-                          {/* Typing dots */}
                           {isStreaming && !message.content && (
                             <div className="flex gap-1.5 py-2">
-                              <span className="w-2 h-2 rounded-full bg-indigo-500 animate-bounce typing-dot-1" />
-                              <span className="w-2 h-2 rounded-full bg-indigo-500 animate-bounce typing-dot-2" />
-                              <span className="w-2 h-2 rounded-full bg-indigo-500 animate-bounce typing-dot-3" />
+                              <span className="w-2 h-2 rounded-full bg-violet-500 animate-bounce typing-dot-1" />
+                              <span className="w-2 h-2 rounded-full bg-violet-500 animate-bounce typing-dot-2" />
+                              <span className="w-2 h-2 rounded-full bg-violet-500 animate-bounce typing-dot-3" />
                             </div>
                           )}
 
-                          {/* Copy button */}
                           {message.content && !isStreaming && (
                             <button
                               type="button"
                               onClick={() => copyToClipboard(message.content, message.id)}
-                              className="absolute -right-2 top-0 p-1.5 rounded-lg opacity-0 group-hover:opacity-100 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all cursor-pointer"
+                              className="absolute -right-2 top-0 p-1.5 rounded-lg opacity-0 group-hover:opacity-100 hover:bg-white/[0.05] transition-all cursor-pointer"
                               title="Copier"
                             >
                               {copiedId === message.id ? (
-                                <Check className="w-3.5 h-3.5 text-green-500" />
+                                <Check className="w-3.5 h-3.5 text-emerald-400" />
                               ) : (
-                                <Copy className="w-3.5 h-3.5 text-gray-400" />
+                                <Copy className="w-3.5 h-3.5 text-gray-500" />
                               )}
                             </button>
                           )}
                         </div>
                       ) : (
-                        <p className="text-gray-700 dark:text-gray-300">{message.content}</p>
+                        <p className="text-gray-300">{message.content}</p>
                       )}
                     </div>
                   </div>
@@ -478,10 +466,10 @@ export default function ChatPage() {
           )}
         </div>
 
-        {/* ============ INPUT ============ */}
-        <div className="border-t border-gray-200 dark:border-gray-800 p-4 bg-white/80 dark:bg-gray-950/80 backdrop-blur-sm">
+        {/* INPUT */}
+        <div className="border-t border-white/[0.06] p-4 bg-white/[0.02] backdrop-blur-sm">
           <div className="max-w-3xl mx-auto">
-            <div className="flex items-end gap-3 bg-gray-50 dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-500/20 transition-all px-4 py-3">
+            <div className="flex items-end gap-3 glass-card px-4 py-3 focus-within:ring-2 focus-within:ring-violet-500/20 focus-within:border-violet-500/30 transition-all">
               <textarea
                 ref={textareaRef}
                 value={input}
@@ -490,13 +478,13 @@ export default function ChatPage() {
                 placeholder="Posez votre question..."
                 rows={1}
                 disabled={isStreaming}
-                className="flex-1 bg-transparent resize-none focus:outline-none text-sm max-h-[200px] py-1 placeholder:text-gray-400"
+                className="flex-1 bg-transparent resize-none focus:outline-none text-sm max-h-[200px] py-1 placeholder:text-gray-600 text-gray-100"
               />
               <button
                 type="button"
                 onClick={() => sendMessage()}
                 disabled={!input.trim() || isStreaming}
-                className="flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-xl bg-indigo-500 text-white hover:bg-indigo-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                className="flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white hover:from-violet-500 hover:to-indigo-500 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200 shadow-lg shadow-violet-500/20 cursor-pointer"
               >
                 {isStreaming ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -505,7 +493,7 @@ export default function ChatPage() {
                 )}
               </button>
             </div>
-            <p className="text-[11px] text-gray-400 text-center mt-2">
+            <p className="text-[11px] text-gray-600 text-center mt-2">
               OmniAI peut faire des erreurs. Vérifiez les informations importantes.
             </p>
           </div>

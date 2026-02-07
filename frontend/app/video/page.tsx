@@ -5,8 +5,8 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { useAuth } from '@/components/AuthProvider'
 import {
   Loader2, Play, Clock, CheckCircle, AlertCircle,
-  Upload, X, ImagePlus, Film, Sparkles, ArrowRight,
-  Zap, Gauge, Crown, Download, RotateCcw
+  Upload, X, ImagePlus, Film, Sparkles,
+  Zap, Gauge, Crown, Download, RotateCcw, Coins
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 
@@ -157,6 +157,16 @@ export default function VideoPage() {
       })
 
       const data = await res.json()
+
+      if (res.status === 402) {
+        toast.error(
+          `Points insuffisants (${data.balance || 0} pts). Il vous faut ${data.cost || 5} pts.`,
+          { duration: 5000 }
+        )
+        setLoading(false)
+        return
+      }
+
       if (data.error) throw new Error(data.error)
 
       const newJob: Job = {
@@ -188,13 +198,7 @@ export default function VideoPage() {
 
   return (
     <main className="min-h-[calc(100vh-4rem)] relative overflow-hidden">
-      {/* Animated background */}
-      <div className="fixed inset-0 -z-10">
-        <div className="absolute inset-0 bg-[#050510]" />
-        <div className="absolute top-[-15%] left-[30%] w-[600px] h-[600px] bg-violet-600/15 rounded-full blur-[120px] animate-pulse" style={{ animationDuration: '8s' }} />
-        <div className="absolute bottom-[-20%] right-[-5%] w-[500px] h-[500px] bg-indigo-600/12 rounded-full blur-[120px] animate-pulse" style={{ animationDuration: '10s' }} />
-        <div className="absolute top-[60%] left-[-10%] w-[400px] h-[400px] bg-purple-600/10 rounded-full blur-[100px] animate-pulse" style={{ animationDuration: '12s' }} />
-      </div>
+      {/* Background handled by global layout aurora */}
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
         {/* Header */}
@@ -358,7 +362,11 @@ export default function VideoPage() {
                   <Play className="w-4 h-4" />
                 )}
                 {loading ? 'Lancement...' : 'Générer'}
-                {!loading && <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-0.5 transition-transform duration-200" />}
+                {!loading && (
+                  <span className="flex items-center gap-1 text-xs opacity-70">
+                    <Coins className="w-3 h-3" />5 pts
+                  </span>
+                )}
               </button>
             </div>
           </div>

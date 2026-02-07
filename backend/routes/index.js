@@ -6,8 +6,10 @@ const chatController = require('../controllers/chat-controller');
 const codeController = require('../controllers/code-controller');
 const imageController = require('../controllers/image-controller');
 const videoController = require('../controllers/video-controller');
+const creditsController = require('../controllers/credits-controller');
 const authMiddleware = require('../middleware/auth');
-const quotaMiddleware = require('../middleware/quota');
+const creditsMiddleware = require('../middleware/credits');
+const { creditDescription } = require('../middleware/credits');
 const { stripe, createCheckoutSession, createPortalSession, handleWebhook } = require('../utils/stripe');
 
 // Routes publiques
@@ -15,22 +17,27 @@ router.get('/status', (req, res) => {
   res.json({ status: 'online', timestamp: Date.now() });
 });
 
-// Routes Chat IA
-router.post('/chat', authMiddleware, quotaMiddleware('chat'), chatController.chat);
-router.post('/chat/stream', authMiddleware, quotaMiddleware('chat'), chatController.stream);
+// Routes Crédits/Points
+router.get('/credits/balance', authMiddleware, creditsController.getBalance);
+router.get('/credits/transactions', authMiddleware, creditsController.getTransactions);
+router.post('/credits/purchase', authMiddleware, creditsController.createPurchase);
+
+// Routes Chat IA (gratuit)
+router.post('/chat', authMiddleware, chatController.chat);
+router.post('/chat/stream', authMiddleware, chatController.stream);
 router.get('/chat/history', authMiddleware, chatController.getHistory);
 
-// Routes Code IA (publiques)
-router.post('/code', codeController.generate);
-router.post('/code/fix', codeController.fix);
-router.post('/code/explain', codeController.explain);
+// Routes Code IA (1 point)
+router.post('/code', authMiddleware, creditDescription('Code IA — Génération'), creditsMiddleware(1), codeController.generate);
+router.post('/code/fix', authMiddleware, creditDescription('Code IA — Correction'), creditsMiddleware(1), codeController.fix);
+router.post('/code/explain', authMiddleware, creditDescription('Code IA — Explication'), creditsMiddleware(1), codeController.explain);
 
-// Routes Image IA
-router.post('/image/generate', authMiddleware, quotaMiddleware('image'), imageController.generate);
+// Routes Image IA (3 points)
+router.post('/image/generate', authMiddleware, creditDescription('Image IA — Génération'), creditsMiddleware(3), imageController.generate);
 router.get('/image/:id', authMiddleware, imageController.getImage);
 
-// Routes Vidéo IA (Higgsfield image-to-video)
-router.post('/video/generate', authMiddleware, quotaMiddleware('video'), videoController.generate);
+// Routes Vidéo IA (5 points)
+router.post('/video/generate', authMiddleware, creditDescription('Vidéo IA — Génération'), creditsMiddleware(5), videoController.generate);
 router.get('/video/:id', authMiddleware, videoController.getVideo);
 router.get('/video/:id/status', authMiddleware, videoController.getStatus);
 

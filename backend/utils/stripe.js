@@ -9,33 +9,25 @@ const PLANS = {
   free: {
     name: 'Gratuit',
     priceId: null,
-    limits: {
-      chat: 50,
-      code: 20,
-      image: 5,
-      video: 1
-    }
+    credits: 100
   },
   pro: {
     name: 'Pro',
     priceId: process.env.STRIPE_PRO_PRICE_ID,
-    limits: {
-      chat: 1000,
-      code: 500,
-      image: 100,
-      video: 20
-    }
+    credits: 5000
   },
   enterprise: {
     name: 'Enterprise',
     priceId: process.env.STRIPE_ENTERPRISE_PRICE_ID,
-    limits: {
-      chat: -1, // illimité
-      code: -1,
-      image: -1,
-      video: -1
-    }
+    credits: -1 // illimité
   }
+};
+
+// Packs de crédits achetables
+const CREDIT_PACKS = {
+  starter: { name: 'Starter', credits: 500, price: 499 },     // $4.99 CAD
+  popular: { name: 'Popular', credits: 2000, price: 1499 },    // $14.99 CAD
+  mega:    { name: 'Mega', credits: 5000, price: 2999 }        // $29.99 CAD
 };
 
 /**
@@ -108,17 +100,49 @@ async function handleWebhook(event) {
 
 // Handlers internes
 async function handleCheckoutComplete(session) {
-  const { userId, planId } = session.metadata;
+  const { type, userId, planId, packId, credits } = session.metadata;
 
-  await supabase.from('subscriptions').upsert({
-    user_id: userId,
-    stripe_customer_id: session.customer,
-    stripe_subscription_id: session.subscription,
-    plan: planId,
-    status: 'active',
-    current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-    updated_at: new Date().toISOString()
-  });
+  // Achat de crédits (one-time payment)
+  if (type === 'credits' && userId && credits) {
+    const creditsService = require('../services/credits-service');
+    const pack = CREDIT_PACKS[packId] || { name: 'Pack' };
+    await creditsService.addCredits(
+      userId,
+      parseInt(credits),
+      'purchase',
+      `Achat pack ${pack.name} — ${credits} points`,
+      { packId, sessionId: session.id }
+    );
+    console.log(`✅ ${credits} crédits ajoutés pour ${userId} (pack ${packId})`);
+    return;
+  }
+
+  // Abonnement (subscription)
+  if (userId && planId) {
+    await supabase.from('subscriptions').upsert({
+      user_id: userId,
+      stripe_customer_id: session.customer,
+      stripe_subscription_id: session.subscription,
+      plan: planId,
+      status: 'active',
+      current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+      updated_at: new Date().toISOString()
+    });
+
+    // Ajouter les crédits mensuels du plan
+    const plan = PLANS[planId];
+    if (plan && plan.credits > 0) {
+      const creditsService = require('../services/credits-service');
+      await creditsService.addCredits(
+        userId,
+        plan.credits,
+        'subscription',
+        `Abonnement ${plan.name} — ${plan.credits} points mensuels`,
+        { planId, sessionId: session.id }
+      );
+      console.log(`✅ ${plan.credits} crédits mensuels ajoutés pour ${userId} (plan ${planId})`);
+    }
+  }
 }
 
 async function handleSubscriptionUpdate(subscription) {
@@ -151,6 +175,31 @@ async function handlePaymentSucceeded(invoice) {
     status: 'succeeded',
     created_at: new Date().toISOString()
   });
+
+  // Ajouter les crédits mensuels pour les renouvellements d'abonnement
+  if (invoice.subscription && invoice.billing_reason === 'subscription_cycle') {
+    try {
+      const { data: sub } = await supabase
+        .from('subscriptions')
+        .select('user_id, plan')
+        .eq('stripe_subscription_id', invoice.subscription)
+        .single();
+
+      if (sub && PLANS[sub.plan] && PLANS[sub.plan].credits > 0) {
+        const creditsService = require('../services/credits-service');
+        await creditsService.addCredits(
+          sub.user_id,
+          PLANS[sub.plan].credits,
+          'subscription',
+          `Renouvellement ${PLANS[sub.plan].name} — ${PLANS[sub.plan].credits} points mensuels`,
+          { planId: sub.plan, invoiceId: invoice.id }
+        );
+        console.log(`✅ Renouvellement: ${PLANS[sub.plan].credits} crédits pour ${sub.user_id}`);
+      }
+    } catch (err) {
+      console.error('Erreur ajout crédits renouvellement:', err);
+    }
+  }
 }
 
 async function handlePaymentFailed(invoice) {
@@ -165,17 +214,18 @@ async function handlePaymentFailed(invoice) {
 }
 
 /**
- * Récupérer les limites d'un plan
+ * Récupérer les crédits d'un plan
  */
-function getPlanLimits(planId) {
-  return PLANS[planId]?.limits || PLANS.free.limits;
+function getPlanCredits(planId) {
+  return PLANS[planId]?.credits || PLANS.free.credits;
 }
 
 module.exports = {
   stripe,
   PLANS,
+  CREDIT_PACKS,
   createCheckoutSession,
   createPortalSession,
   handleWebhook,
-  getPlanLimits
+  getPlanCredits
 };
