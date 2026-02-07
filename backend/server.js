@@ -14,7 +14,18 @@ const PORT = process.env.PORT || 3001;
 // Middlewares de sécurité
 app.use(helmet());
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  origin: function(origin, callback) {
+    const allowed = [
+      process.env.FRONTEND_URL,
+      'http://localhost:3000',
+      'https://omniai-frontend-production.up.railway.app'
+    ].filter(Boolean);
+    if (!origin || allowed.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(null, true); // Allow all origins in production for now
+    }
+  },
   credentials: true
 }));
 

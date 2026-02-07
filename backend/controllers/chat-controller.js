@@ -58,15 +58,17 @@ exports.stream = async (req, res) => {
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Connection', 'keep-alive');
 
+    const convId = conversationId || require('uuid').v4();
+
     await chatService.streamMessage({
       userId,
       message,
-      conversationId,
+      conversationId: convId,
       onChunk: (chunk) => {
         res.write(`data: ${JSON.stringify({ chunk })}\n\n`);
       },
       onComplete: (fullResponse) => {
-        res.write(`data: ${JSON.stringify({ done: true, response: fullResponse })}\n\n`);
+        res.write(`data: ${JSON.stringify({ done: true, conversationId: convId, response: fullResponse })}\n\n`);
         res.end();
       }
     });
