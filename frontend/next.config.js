@@ -1,11 +1,12 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  output: 'standalone',
   images: {
     remotePatterns: [
       { protocol: 'https', hostname: 'oaidalleapiprodscus.blob.core.windows.net' },
       { protocol: 'https', hostname: '*.supabase.co' },
-      { protocol: 'https', hostname: 'wqiizowaeyyvlpcstshe.supabase.co' },
+      { protocol: 'https', hostname: 'xhzegwreymbzjwsrbmiv.supabase.co' },
     ],
   },
   env: {
