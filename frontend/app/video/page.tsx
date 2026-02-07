@@ -1,11 +1,12 @@
-// OmniAI - Page Génération de Vidéos (Higgsfield Image-to-Video)
+// OmniAI - Page Génération de Vidéos (Higgsfield DoP) — Redesign Glassmorphism
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useAuth } from '@/components/AuthProvider'
 import {
-  Video, Loader2, Play, Clock, CheckCircle, AlertCircle,
-  Upload, X, ImagePlus, Film, ChevronDown
+  Loader2, Play, Clock, CheckCircle, AlertCircle,
+  Upload, X, ImagePlus, Film, Sparkles, ArrowRight,
+  Zap, Gauge, Crown, Download, RotateCcw
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 
@@ -23,9 +24,9 @@ interface ImagePreview {
 }
 
 const models = [
-  { value: 'dop-lite', label: 'DoP Lite', desc: 'Rapide & economique' },
-  { value: 'dop-turbo', label: 'DoP Turbo', desc: 'Equilibre qualite/vitesse' },
-  { value: 'dop-preview', label: 'DoP Preview', desc: 'Meilleure qualite' },
+  { value: 'dop-lite', label: 'DoP Lite', desc: 'Rapide & économique', speed: '~30s', icon: Zap },
+  { value: 'dop-turbo', label: 'DoP Turbo', desc: 'Équilibre qualité/vitesse', speed: '~60s', icon: Gauge },
+  { value: 'dop-preview', label: 'DoP Preview', desc: 'Meilleure qualité', speed: '~90s', icon: Crown },
 ]
 
 export default function VideoPage() {
@@ -58,7 +59,7 @@ export default function VideoPage() {
         break
       }
       if (!allowed.includes(file.type)) {
-        toast.error(`${file.name} : format non supporte (JPEG, PNG, WebP)`)
+        toast.error(`${file.name} : format non supporté (JPEG, PNG, WebP)`)
         continue
       }
       if (file.size > 10 * 1024 * 1024) {
@@ -118,8 +119,8 @@ export default function VideoPage() {
         if (data.status === 'completed' || data.status === 'failed') {
           clearInterval(interval)
           delete pollRef.current[jobId]
-          if (data.status === 'completed') toast.success('Video prete !')
-          if (data.status === 'failed') toast.error(data.error || 'Erreur de generation')
+          if (data.status === 'completed') toast.success('Vidéo prête !')
+          if (data.status === 'failed') toast.error(data.error || 'Erreur de génération')
         }
       } catch {
         clearInterval(interval)
@@ -136,7 +137,7 @@ export default function VideoPage() {
       return
     }
     if (!prompt.trim()) {
-      toast.error('Decrivez le mouvement souhaite')
+      toast.error('Décrivez le mouvement souhaité')
       return
     }
 
@@ -172,206 +173,299 @@ export default function VideoPage() {
         prev.forEach(img => URL.revokeObjectURL(img.url))
         return []
       })
-      toast.success('Generation lancee !')
+      toast.success('Génération lancée !')
     } catch (err: any) {
-      toast.error(err.message || 'Erreur lors de la generation')
+      toast.error(err.message || 'Erreur lors de la génération')
     }
     setLoading(false)
   }
 
   const statusConfig = {
-    processing: { icon: Clock, color: 'text-amber-500', bg: 'bg-amber-500/10', label: 'En cours...' },
-    completed: { icon: CheckCircle, color: 'text-green-500', bg: 'bg-green-500/10', label: 'Termine' },
-    failed: { icon: AlertCircle, color: 'text-red-500', bg: 'bg-red-500/10', label: 'Echec' },
+    processing: { icon: Clock, color: 'text-amber-400', bg: 'bg-amber-500/10', border: 'border-amber-500/20', label: 'En cours...' },
+    completed: { icon: CheckCircle, color: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/20', label: 'Terminé' },
+    failed: { icon: AlertCircle, color: 'text-red-400', bg: 'bg-red-500/10', border: 'border-red-500/20', label: 'Échec' },
   }
 
   return (
-    <main className="min-h-[calc(100vh-4rem)]">
-      <div className="max-w-4xl mx-auto px-4 py-8">
+    <main className="min-h-[calc(100vh-4rem)] relative overflow-hidden">
+      {/* Animated background */}
+      <div className="fixed inset-0 -z-10">
+        <div className="absolute inset-0 bg-[#050510]" />
+        <div className="absolute top-[-15%] left-[30%] w-[600px] h-[600px] bg-violet-600/15 rounded-full blur-[120px] animate-pulse" style={{ animationDuration: '8s' }} />
+        <div className="absolute bottom-[-20%] right-[-5%] w-[500px] h-[500px] bg-indigo-600/12 rounded-full blur-[120px] animate-pulse" style={{ animationDuration: '10s' }} />
+        <div className="absolute top-[60%] left-[-10%] w-[400px] h-[400px] bg-purple-600/10 rounded-full blur-[100px] animate-pulse" style={{ animationDuration: '12s' }} />
+      </div>
+
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-pink-500 rounded-lg flex items-center justify-center">
-              <Film className="w-5 h-5 text-white" />
+        <div className="mb-8 animate-fade-in">
+          <div className="flex items-center gap-4 mb-2">
+            <div className="relative">
+              <div className="w-12 h-12 bg-gradient-to-br from-violet-500 via-purple-500 to-indigo-500 rounded-2xl flex items-center justify-center shadow-lg shadow-violet-500/25">
+                <Film className="w-6 h-6 text-white" />
+              </div>
+              <div className="absolute -inset-1 bg-gradient-to-br from-violet-500 via-purple-500 to-indigo-500 rounded-2xl opacity-20 blur-sm -z-10" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold">Videos IA</h1>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Higgsfield DoP — Image to Video</p>
+              <h1 className="text-2xl font-bold text-white">
+                Vidéos IA
+              </h1>
+              <p className="text-sm text-gray-400">
+                Higgsfield DoP — Transformez vos images en vidéos cinématiques
+              </p>
             </div>
           </div>
-          <p className="text-gray-600 dark:text-gray-400 mt-2">
-            Uploadez 1 a 3 images et decrivez le mouvement souhaite pour generer une video cinematique.
-          </p>
         </div>
 
-        {/* Input Section */}
-        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5 mb-8">
+        {/* Main Input Card — Glassmorphism */}
+        <div className="relative rounded-2xl overflow-hidden mb-8 animate-slide-up">
+          {/* Glass border glow */}
+          <div className="absolute -inset-[1px] bg-gradient-to-br from-violet-500/30 via-purple-500/20 to-indigo-500/30 rounded-2xl" />
 
-          {/* Image Upload Zone */}
-          <label className="block text-sm font-medium mb-2">
-            Images source ({images.length}/3)
-          </label>
+          <div className="relative bg-white/[0.03] backdrop-blur-2xl rounded-2xl border border-white/[0.08] p-6">
 
-          <div
-            onDrop={handleDrop}
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            className={`relative border-2 border-dashed rounded-xl p-4 transition-colors ${
-              dragActive
-                ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-500/10'
-                : 'border-gray-300 dark:border-gray-700 hover:border-gray-400 dark:hover:border-gray-600'
-            }`}
-          >
-            <div className="flex items-center gap-4 flex-wrap">
-              {/* Image Previews */}
-              {images.map((img, i) => (
-                <div key={i} className="relative w-24 h-24 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 group">
-                  <img src={img.url} alt={`Image ${i + 1}`} className="w-full h-full object-cover" />
-                  <button
-                    type="button"
-                    title="Supprimer cette image"
-                    onClick={() => removeImage(i)}
-                    className="absolute top-1 right-1 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                  <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-[10px] text-center py-0.5">
-                    {i + 1}
-                  </div>
-                </div>
-              ))}
-
-              {/* Add Button */}
-              {images.length < 3 && (
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="w-24 h-24 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600 flex flex-col items-center justify-center gap-1 text-gray-400 hover:text-indigo-500 hover:border-indigo-500 transition-colors cursor-pointer"
-                >
-                  <ImagePlus className="w-6 h-6" />
-                  <span className="text-[10px] font-medium">Ajouter</span>
-                </button>
-              )}
-
-              {/* Empty State */}
-              {images.length === 0 && (
-                <div className="flex-1 text-center py-2">
-                  <Upload className="w-8 h-8 mx-auto mb-1 text-gray-300 dark:text-gray-600" />
-                  <p className="text-sm text-gray-400">Glissez vos images ici ou cliquez sur +</p>
-                  <p className="text-xs text-gray-300 dark:text-gray-600 mt-1">JPEG, PNG, WebP — Max 10 MB</p>
-                </div>
-              )}
-            </div>
-
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/jpeg,image/png,image/webp"
-              multiple
-              title="Selectionner des images"
-              aria-label="Selectionner des images pour la generation video"
-              className="hidden"
-              onChange={(e) => {
-                if (e.target.files) addImages(e.target.files)
-                e.target.value = ''
-              }}
-            />
-          </div>
-
-          {/* Prompt */}
-          <div className="mt-4">
-            <label htmlFor="video-prompt" className="block text-sm font-medium mb-2">
-              Decrivez le mouvement / style
-            </label>
-            <textarea
-              id="video-prompt"
-              value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
-              placeholder="Ex : Camera dolly avant avec mouvement cinematique lent, profondeur de champ..."
-              rows={2}
-              className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm resize-none"
-            />
-          </div>
-
-          {/* Model + Generate */}
-          <div className="flex flex-col sm:flex-row gap-4 mt-4 items-end">
-            <div className="flex-1">
-              <label htmlFor="model" className="block text-xs font-medium text-gray-500 mb-1.5">
-                Modele
+            {/* Image Upload Zone */}
+            <div className="mb-5">
+              <label className="flex items-center gap-2 text-sm font-medium mb-2.5 text-gray-200">
+                <ImagePlus className="w-4 h-4 text-violet-400" />
+                Images source
+                <span className="text-xs text-gray-500 font-normal ml-1">({images.length}/3)</span>
               </label>
-              <div className="relative">
-                <select
-                  id="model"
-                  value={model}
-                  onChange={(e) => setModel(e.target.value)}
-                  className="w-full appearance-none px-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm cursor-pointer"
-                >
-                  {models.map(m => (
-                    <option key={m.value} value={m.value}>
-                      {m.label} — {m.desc}
-                    </option>
+
+              <div
+                onDrop={handleDrop}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                className={`relative rounded-xl p-5 transition-all duration-200 border-2 border-dashed ${
+                  dragActive
+                    ? 'border-violet-500/60 bg-violet-500/10'
+                    : 'border-white/[0.08] hover:border-white/[0.15] bg-white/[0.01]'
+                }`}
+              >
+                <div className="flex items-center gap-4 flex-wrap">
+                  {/* Image Previews */}
+                  {images.map((img, i) => (
+                    <div key={i} className="relative w-28 h-28 rounded-xl overflow-hidden border border-white/[0.1] group shadow-lg">
+                      <img src={img.url} alt={`Image ${i + 1}`} className="w-full h-full object-cover" />
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors duration-200" />
+                      <button
+                        type="button"
+                        title="Supprimer cette image"
+                        aria-label={`Supprimer l'image ${i + 1}`}
+                        onClick={() => removeImage(i)}
+                        className="absolute top-1.5 right-1.5 w-6 h-6 bg-red-500/80 backdrop-blur-sm text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer hover:bg-red-500"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent text-white text-[10px] text-center py-1 font-medium">
+                        Image {i + 1}
+                      </div>
+                    </div>
                   ))}
-                </select>
-                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+
+                  {/* Add Button */}
+                  {images.length < 3 && (
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="w-28 h-28 rounded-xl border-2 border-dashed border-white/[0.08] flex flex-col items-center justify-center gap-2 text-gray-500 hover:text-violet-400 hover:border-violet-500/30 hover:bg-violet-500/5 transition-all duration-200 cursor-pointer"
+                    >
+                      <ImagePlus className="w-6 h-6" />
+                      <span className="text-[11px] font-medium">Ajouter</span>
+                    </button>
+                  )}
+
+                  {/* Empty State */}
+                  {images.length === 0 && (
+                    <div className="flex-1 text-center py-3">
+                      <Upload className="w-8 h-8 mx-auto mb-2 text-gray-600" />
+                      <p className="text-sm text-gray-400">Glissez vos images ici ou cliquez sur +</p>
+                      <p className="text-xs text-gray-600 mt-1">JPEG, PNG, WebP — Max 10 MB par image</p>
+                    </div>
+                  )}
+                </div>
+
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  multiple
+                  title="Sélectionner des images"
+                  aria-label="Sélectionner des images pour la génération vidéo"
+                  className="hidden"
+                  onChange={(e) => {
+                    if (e.target.files) addImages(e.target.files)
+                    e.target.value = ''
+                  }}
+                />
               </div>
             </div>
 
-            <button
-              type="button"
-              onClick={handleGenerate}
-              disabled={loading || images.length === 0 || !prompt.trim()}
-              className="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-orange-500 to-pink-500 text-white rounded-lg font-medium hover:from-orange-600 hover:to-pink-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all cursor-pointer"
-            >
-              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
-              {loading ? 'Lancement...' : 'Generer la video'}
-            </button>
+            {/* Prompt */}
+            <div className="mb-5">
+              <label htmlFor="video-prompt" className="flex items-center gap-2 text-sm font-medium mb-2.5 text-gray-200">
+                <Sparkles className="w-4 h-4 text-purple-400" />
+                Décrivez le mouvement / style
+              </label>
+              <textarea
+                id="video-prompt"
+                value={prompt}
+                onChange={(e) => setPrompt(e.target.value)}
+                placeholder="Ex : Camera dolly avant avec mouvement cinématique lent, profondeur de champ, lumière dorée..."
+                rows={2}
+                className="w-full px-4 py-3.5 rounded-xl border border-white/[0.08] bg-white/[0.03] backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-violet-500/40 focus:border-violet-500/30 text-sm text-gray-100 resize-none placeholder-gray-600 transition-all duration-200"
+              />
+            </div>
+
+            {/* Model + Generate */}
+            <div className="flex flex-col sm:flex-row gap-4 items-end">
+              {/* Model Selector */}
+              <div className="flex-1 w-full">
+                <label className="block text-xs font-medium text-gray-500 mb-2.5 uppercase tracking-wider">Modèle</label>
+                <div className="flex gap-2">
+                  {models.map(m => (
+                    <button
+                      key={m.value}
+                      type="button"
+                      onClick={() => setModel(m.value)}
+                      className={`flex-1 flex flex-col items-center gap-1 px-3 py-2.5 rounded-xl text-center transition-all duration-200 cursor-pointer border ${
+                        model === m.value
+                          ? 'bg-violet-500/15 border-violet-500/40 text-violet-300 shadow-lg shadow-violet-500/10'
+                          : 'border-white/[0.06] bg-white/[0.02] text-gray-400 hover:border-white/[0.12] hover:bg-white/[0.04]'
+                      }`}
+                    >
+                      <div className="flex items-center gap-1.5">
+                        <m.icon className="w-3.5 h-3.5" />
+                        <span className="text-xs font-medium">{m.label}</span>
+                      </div>
+                      <span className="text-[10px] text-gray-500">{m.speed}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Generate Button */}
+              <button
+                type="button"
+                onClick={handleGenerate}
+                disabled={loading || images.length === 0 || !prompt.trim()}
+                className="group/btn relative flex items-center justify-center gap-2 px-8 py-2.5 bg-gradient-to-r from-violet-600 to-purple-600 text-white rounded-xl font-medium disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200 shadow-lg shadow-violet-500/20 hover:shadow-violet-500/40 hover:from-violet-500 hover:to-purple-500 cursor-pointer whitespace-nowrap overflow-hidden"
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 translate-x-[-100%] group-hover/btn:translate-x-[100%] transition-transform duration-700" />
+                {loading ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Play className="w-4 h-4" />
+                )}
+                {loading ? 'Lancement...' : 'Générer'}
+                {!loading && <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-0.5 transition-transform duration-200" />}
+              </button>
+            </div>
           </div>
         </div>
 
         {/* Jobs List */}
         {jobs.length === 0 ? (
-          <div className="text-center py-20 text-gray-400">
-            <Video className="w-16 h-16 mx-auto mb-4 opacity-30" />
-            <p className="text-lg">Vos videos apparaitront ici</p>
-            <p className="text-sm mt-1">Uploadez des images et decrivez le mouvement</p>
+          <div className="text-center py-20 animate-fade-in">
+            <div className="relative w-24 h-24 mx-auto mb-6">
+              <div className="absolute inset-0 bg-gradient-to-br from-violet-500/10 to-purple-500/10 rounded-3xl border border-white/[0.05]" />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <Film className="w-10 h-10 text-gray-700" />
+              </div>
+            </div>
+            <p className="text-lg text-gray-400 font-medium">Vos vidéos apparaîtront ici</p>
+            <p className="text-sm text-gray-600 mt-2 max-w-md mx-auto">
+              Uploadez des images et décrivez le mouvement pour créer des vidéos cinématiques
+            </p>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-5">
             {jobs.map(job => {
               const cfg = statusConfig[job.status]
               return (
                 <div
                   key={job.id}
-                  className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5"
+                  className="relative rounded-2xl overflow-hidden"
                 >
-                  <div className="flex items-start justify-between gap-4 mb-3">
-                    <p className="text-sm font-medium flex-1 line-clamp-2">{job.prompt}</p>
-                    <span className={`flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full ${cfg.color} ${cfg.bg}`}>
-                      <cfg.icon className="w-3.5 h-3.5" />
-                      {cfg.label}
-                    </span>
-                  </div>
+                  {/* Subtle border glow based on status */}
+                  <div className={`absolute -inset-[1px] rounded-2xl ${
+                    job.status === 'processing' ? 'bg-gradient-to-br from-amber-500/20 via-transparent to-amber-500/10' :
+                    job.status === 'completed' ? 'bg-gradient-to-br from-emerald-500/20 via-transparent to-emerald-500/10' :
+                    'bg-gradient-to-br from-red-500/20 via-transparent to-red-500/10'
+                  }`} />
 
-                  {job.status === 'processing' && (
-                    <div className="space-y-1">
-                      <div className="w-full bg-gray-100 dark:bg-gray-800 rounded-full h-2">
-                        <div
-                          className="bg-gradient-to-r from-orange-500 to-pink-500 h-2 rounded-full transition-all duration-700"
-                          style={{ width: `${job.progress}%` }}
-                        />
+                  <div className={`relative bg-white/[0.03] backdrop-blur-2xl rounded-2xl border p-5 shadow-xl transition-all duration-300 ${cfg.border}`}>
+                    {/* Header */}
+                    <div className="flex items-start justify-between gap-4 mb-4">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-200 line-clamp-2">{job.prompt}</p>
                       </div>
-                      <p className="text-xs text-gray-400 text-right">{job.progress}%</p>
+                      <span className={`flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full ${cfg.color} ${cfg.bg} whitespace-nowrap border ${cfg.border}`}>
+                        <cfg.icon className="w-3.5 h-3.5" />
+                        {cfg.label}
+                      </span>
                     </div>
-                  )}
 
-                  {job.status === 'completed' && job.videoUrl && (
-                    <video
-                      src={job.videoUrl}
-                      controls
-                      className="w-full rounded-lg mt-3 max-h-[400px] bg-black"
-                      playsInline
-                    />
-                  )}
+                    {/* Progress Bar */}
+                    {job.status === 'processing' && (
+                      <div className="space-y-2">
+                        <div className="w-full bg-white/[0.05] rounded-full h-2 overflow-hidden">
+                          <div
+                            className="bg-gradient-to-r from-violet-500 to-purple-500 h-2 rounded-full transition-all duration-700 relative"
+                            style={{ width: `${Math.max(job.progress, 5)}%` }}
+                          >
+                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent animate-pulse" />
+                          </div>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <p className="text-xs text-gray-500">Génération en cours...</p>
+                          <p className="text-xs text-gray-400 font-medium tabular-nums">{job.progress}%</p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Video Player */}
+                    {job.status === 'completed' && job.videoUrl && (
+                      <div className="mt-3">
+                        <div className="rounded-xl overflow-hidden border border-white/[0.08] bg-black/50">
+                          <video
+                            src={job.videoUrl}
+                            controls
+                            className="w-full max-h-[400px]"
+                            playsInline
+                          />
+                        </div>
+                        <div className="flex gap-2 mt-3">
+                          <a
+                            href={job.videoUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-1.5 px-3 py-1.5 bg-white/[0.05] border border-white/[0.08] text-gray-300 text-xs rounded-lg hover:bg-white/[0.08] transition-colors duration-200 cursor-pointer"
+                          >
+                            <Download className="w-3.5 h-3.5" />
+                            Télécharger
+                          </a>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Error */}
+                    {job.status === 'failed' && (
+                      <div className="mt-3 px-4 py-3 rounded-xl bg-red-500/5 border border-red-500/10">
+                        <div className="flex items-center justify-between">
+                          <p className="text-sm text-red-400">La génération a échoué. Veuillez réessayer avec d'autres paramètres.</p>
+                          <button
+                            type="button"
+                            onClick={() => setPrompt(job.prompt)}
+                            className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-colors duration-200 cursor-pointer whitespace-nowrap ml-3"
+                          >
+                            <RotateCcw className="w-3.5 h-3.5" />
+                            Réessayer
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               )
             })}
