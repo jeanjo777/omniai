@@ -17,6 +17,7 @@ router.get('/status', (req, res) => {
 
 // Routes Chat IA
 router.post('/chat', authMiddleware, quotaMiddleware('chat'), chatController.chat);
+router.post('/chat/stream', authMiddleware, quotaMiddleware('chat'), chatController.stream);
 router.get('/chat/history', authMiddleware, chatController.getHistory);
 
 // Routes Code IA (publiques)
